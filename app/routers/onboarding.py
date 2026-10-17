@@ -22,24 +22,19 @@ def generate_id_interno(db: Session) -> str:
     year = datetime.utcnow().year
     prefix = f"CJL-OPT-{year}-"
     
-    # Obtenemos todos los IDs de este año (traerlos a Python evita problemas de compatibilidad SQL)
-    registros = db.query(OnboardingOptiGlass.id_interno).all()
-    existentes = [r[0] for r in registros if r[0] and r[0].startswith(prefix)]
+    # Pedir a la BD el ID más alto que exista con este prefijo
+    ultimo_id = db.query(func.max(OnboardingOptiGlass.id_interno)).filter(
+        OnboardingOptiGlass.id_interno.like(f"{prefix}%")
+    ).scalar()
     
-    if not existentes:
-        return f"{prefix}0001"
-        
-    # Encontramos el número más alto y le sumamos 1
-    max_num = 0
-    for e in existentes:
+    if ultimo_id:
         try:
-            num = int(e.split("-")[-1])
-            if num > max_num:
-                max_num = num
+            numero = int(ultimo_id.split("-")[-1])
+            return f"{prefix}{numero + 1:04d}"
         except ValueError:
             pass
             
-    return f"{prefix}{max_num + 1:04d}"
+    return f"{prefix}0001"
 
 @router.get("", response_class=HTMLResponse)
 async def show_form(request: Request, db: Session = Depends(get_db)):
