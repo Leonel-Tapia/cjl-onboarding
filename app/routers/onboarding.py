@@ -98,8 +98,11 @@ async def submit_form(
     id_interno = generate_id_interno(db)
     client_ip = request.client.host if request.client else None
 
+    # Forzamos a que la fecha sea exactamente la hora actual local sin microsegundos problemáticos
+    ahora = datetime.now().replace(microsecond=0)
+
     registro = OnboardingOptiGlass(
-        id_interno=id_interno, fecha_submit=datetime.now(), estado="pending", precios_json=precios,
+        id_interno=id_interno, fecha_submit=ahora, estado="pending", precios_json=precios,
         email_cotizaciones=email_cotizaciones, telefono_cotizaciones=telefono_cotizaciones, sistema_cotizaciones=sistema_cotizaciones, tiempo_respuesta=tiempo_respuesta,
         numero_principal_grupo=numero_principal_grupo, garantias_json=garantias_json, texto_garantia_oficial=texto_garantia_oficial,
         horario_lv=horario_lv, horario_sabado=horario_sabado, horario_domingo=horario_domingo, servicio_movil=(servicio_movil == "true"), radio_millas=radio_millas, direccion_taller=direccion_taller,
@@ -108,7 +111,7 @@ async def submit_form(
         promocion_actual=promocion_actual, descuento_efectivo=descuento_efectivo, promo_adas=promo_adas, promo_referidos=promo_referidos, otra_promo=otra_promo,
         metodos_pago_json=metodos_pago_json, trabajan_aseguradoras=(trabajan_aseguradoras == "true"), aseguradoras_json=aseguradoras_json, manejan_deducibles=manejan_deducibles, como_cobran_claims=como_cobran_claims, aceptan_seguro_cita=(aceptan_seguro_cita == "true"),
         material_recibido=("material_recibido" in form), notas_material=notas_material, acepta_terminos=("acepta_terminos" in form),
-        autoriza_cliente=True, autoriza_cliente_nombre=autoriza_cliente_nombre, autoriza_cliente_sello=autoriza_cliente_sello, autoriza_cliente_fecha=datetime.now(), autoriza_cliente_ip=client_ip,
+        autoriza_cliente=True, autoriza_cliente_nombre=autoriza_cliente_nombre, autoriza_cliente_sello=autoriza_cliente_sello, autoriza_cliente_fecha=ahora, autoriza_cliente_ip=client_ip,
     )
     db.add(registro); db.commit(); db.refresh(registro)
     return RedirectResponse(url=f"/onboarding/success/{registro.id_interno}", status_code=303)
