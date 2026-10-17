@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        @page { size: letter; margin: 2cm; }
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 10pt; color: #333; }
+        h1 { color: #0d6efd; font-size: 18pt; border-bottom: 2px solid #0d6efd; padding-bottom: 5px; }
+        h2 { color: #0d6efd; font-size: 14pt; margin-top: 20px; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .info-box { background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .info-row { margin-bottom: 8px; }
+        .label { font-weight: bold; color: #555; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+        th, td { border: 1px solid #dee2e6; padding: 8px; text-align: left; }
+        th { background-color: #e9ecef; font-weight: bold; }
+        .footer { margin-top: 50px; text-align: center; font-size: 8pt; color: #777; }
+        .signature-box { border: 2px solid #198754; padding: 15px; border-radius: 5px; margin-top: 30px; background-color: #d1e7dd; text-align: center; }
+        .signature-text { font-size: 12pt; font-weight: bold; color: #198754; }
+    </style>
+</head>
+<body>
+    <div style="text-align: center; margin-bottom: 10px;"><img src="app/static/images/cjl.jpg" style="height: 80px;"></div>
+    <div class="header"><h1>Onboarding Document</h1><p><strong>OptiGlass+ McAllen Texas</strong> &times; CJL Creative Ideas Marketing</p></div>
+    <div class="info-box">
+        <div class="info-row"><span class="label">Reference ID:</span> {{ registro.id_interno }}</div>
+        <div class="info-row"><span class="label">Date Submitted:</span> {{ registro.fecha_submit.strftime('%Y-%m-%d %H:%M:%S') }} UTC</div>
+        <div class="info-row"><span class="label">Email for Quotes:</span> {{ registro.email_cotizaciones }}</div>
+    </div>
+    <h2>1. Pricing Structure</h2>
+    <table><thead><tr><th>Part DW</th><th>Vehicle</th><th>Your Glass Cost $</th><th>Final Sale Price $</th><th>Your Profit $</th><th>Margin %</th></tr></thead>
+    <tbody>{% for p in registro.precios_json %}<tr><td>{{ p.parte }}</td><td>{{ p.vehiculo }}</td><td>${{ p.costo }}</td><td>${{ p.venta }}</td><td>${{ p.ganancia }}</td><td>{{ p.margen }}%</td></tr>{% endfor %}</tbody></table>
+    <h2>2. Quotes Account</h2>
+    <p><strong>Email:</strong> {{ registro.email_cotizaciones or 'N/A' }}</p>
+    <p><strong>Phone:</strong> {{ registro.telefono_cotizaciones or 'N/A' }}</p>
+    <p><strong>System Used:</strong> {{ registro.sistema_cotizaciones or 'N/A' }}</p>
+    <p><strong>Average Response Time:</strong> {{ registro.tiempo_respuesta or 'N/A' }}</p>
+    <h2>3. WhatsApp Group</h2>
+    <p><strong>Main Phone:</strong> {{ registro.numero_principal_grupo or 'N/A' }}</p>
+    <h2>4. Warranties Offered</h2>
+    <ul>
+        {% if registro.garantias_json.fugas %}<li>Warranty against leaks and seepage (lifetime)</li>{% endif %}
+        {% if registro.garantias_json.mano_obra %}<li>Labor / installation warranty</li>{% endif %}
+        {% if registro.garantias_json.fabrica %}<li>Glass factory warranty</li>{% endif %}
+        {% if registro.garantias_json.molduras %}<li>Warranty on moldings and seals</li>{% endif %}
+        {% if registro.garantias_json.otro %}<li>Other</li>{% endif %}
+    </ul>
+    {% if registro.texto_garantia_oficial %}<p><strong>Official Warranty Text:</strong> {{ registro.texto_garantia_oficial }}</p>{% endif %}
+    <div class="signature-box">
+        <p class="signature-text">CLIENT AUTHORIZATION</p>
+        <p>I confirm that I authorize CJL Creative Ideas Marketing to start the onboarding process.</p>
+        <br><p><strong>{{ registro.autoriza_cliente_sello }}</strong></p><p>IP Address: {{ registro.autoriza_cliente_ip }}</p>
+    </div>
+    <div class="footer">CJL Creative Ideas Marketing &mdash; Javier Díaz | César Galaviz | Leonel Tapia<br>We work for results.</div>
+</body>
+</html>
