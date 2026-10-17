@@ -2,10 +2,10 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Leer directamente la variable de entorno (funciona en local y en Railway)
+# Leer DATABASE_URL de las variables de entorno (Railway)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Si por alguna razon viene vacia en local, usar la de desarrollo
+# Si no existe, usar la URL local para desarrollo
 if not DATABASE_URL:
     DATABASE_URL = "postgresql+psycopg2://postgres:leotap@localhost:5432/cjl_onboarding"
 
