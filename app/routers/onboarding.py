@@ -19,12 +19,25 @@ ADMIN_KEY = "CJL_Admin_2026"
 def generate_id_interno(db: Session) -> str:
     year = datetime.utcnow().year
     prefix = f"CJL-OPT-{year}-"
-    # Usamos func.substr y startswith para evitar problemas con el wildcard % en Postgres
-    from sqlalchemy import func
-    count = db.query(OnboardingOptiGlass).filter(
-        func.substr(OnboardingOptiGlass.id_interno, 1, len(prefix)) == prefix
-    ).count()
-    return f"{prefix}{count + 1:04d}"
+    
+    # Obtenemos todos los IDs de este año (traerlos a Python evita problemas de compatibilidad SQL)
+    registros = db.query(OnboardingOptiGlass.id_interno).all()
+    existentes = [r[0] for r in registros if r[0] and r[0].startswith(prefix)]
+    
+    if not existentes:
+        return f"{prefix}0001"
+        
+    # Encontramos el número más alto y le sumamos 1
+    max_num = 0
+    for e in existentes:
+        try:
+            num = int(e.split("-")[-1])
+            if num > max_num:
+                max_num = num
+        except ValueError:
+            pass
+            
+    return f"{prefix}{max_num + 1:04d}"
 
 @router.get("", response_class=HTMLResponse)
 async def show_form(request: Request, db: Session = Depends(get_db)):
