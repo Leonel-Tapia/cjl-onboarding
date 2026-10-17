@@ -99,7 +99,8 @@ async def submit_form(
     client_ip = request.client.host if request.client else None
 
     # Forzamos a que la fecha sea exactamente la hora actual local sin microsegundos problemáticos
-    ahora = datetime.now().replace(microsecond=0)
+    # Forzamos a que la fecha sea un string simple: YYYY-MM-DD
+    ahora = datetime.now().strftime("%Y-%m-%d")
 
     registro = OnboardingOptiGlass(
         id_interno=id_interno, fecha_submit=ahora, estado="pending", precios_json=precios,
