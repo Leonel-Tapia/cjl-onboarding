@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from datetime import datetime
+import json
 from typing import Optional
 from xhtml2pdf import pisa
 from io import BytesIO
@@ -103,14 +104,14 @@ async def submit_form(
     # Usaremos func.now() directamente en el modelo
 
     registro = OnboardingOptiGlass(
-        id_interno=id_interno, fecha_submit=func.now(), estado="pending", precios_json=precios,
+        id_interno=id_interno, fecha_submit=func.now(), estado="pending", precios_json=precios if isinstance(precios, list) else json.loads(precios),
         email_cotizaciones=email_cotizaciones, telefono_cotizaciones=telefono_cotizaciones, sistema_cotizaciones=sistema_cotizaciones, tiempo_respuesta=tiempo_respuesta,
-        numero_principal_grupo=numero_principal_grupo, garantias_json=garantias_json, texto_garantia_oficial=texto_garantia_oficial,
+        numero_principal_grupo=numero_principal_grupo, garantias_json=garantias_json if isinstance(garantias_json, dict) else json.loads(garantias_json), texto_garantia_oficial=texto_garantia_oficial,
         horario_lv=horario_lv, horario_sabado=horario_sabado, horario_domingo=horario_domingo, servicio_movil=(servicio_movil == "true"), radio_millas=radio_millas, direccion_taller=direccion_taller,
         tiempo_parabrisas=tiempo_parabrisas, tiempo_lateral=tiempo_lateral, tiempo_trasero=tiempo_trasero, instaladores_disponibles=instaladores_disponibles,
         ciudades_cobertura=ciudades_cobertura, zip_codes=zip_codes, zonas_no_trabajan=zonas_no_trabajan, cobran_extra_movil=(cobran_extra_movil == "true"), cuanto_extra=cuanto_extra,
         promocion_actual=promocion_actual, descuento_efectivo=descuento_efectivo, promo_adas=promo_adas, promo_referidos=promo_referidos, otra_promo=otra_promo,
-        metodos_pago_json=metodos_pago_json, trabajan_aseguradoras=(trabajan_aseguradoras == "true"), aseguradoras_json=aseguradoras_json, manejan_deducibles=manejan_deducibles, como_cobran_claims=como_cobran_claims, aceptan_seguro_cita=(aceptan_seguro_cita == "true"),
+        metodos_pago_json=metodos_pago_json if isinstance(metodos_pago_json, dict) else json.loads(metodos_pago_json), trabajan_aseguradoras=(trabajan_aseguradoras == "true"), aseguradoras_json=aseguradoras_json if isinstance(aseguradoras_json, dict) else json.loads(aseguradoras_json), manejan_deducibles=manejan_deducibles, como_cobran_claims=como_cobran_claims, aceptan_seguro_cita=(aceptan_seguro_cita == "true"),
         material_recibido=("material_recibido" in form), notas_material=notas_material, acepta_terminos=("acepta_terminos" in form),
         autoriza_cliente=True, autoriza_cliente_nombre=autoriza_cliente_nombre, autoriza_cliente_sello=autoriza_cliente_sello, autoriza_cliente_fecha=func.now(), autoriza_cliente_ip=client_ip,
     )
