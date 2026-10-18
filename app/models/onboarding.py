@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
+﻿from sqlalchemy import Column, Integer, String, Boolean, DateTime, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime
 from app.database import Base
@@ -41,6 +41,7 @@ class OnboardingOptiGlass(Base):
     tiempo_lateral = Column(String(20), nullable=True)
     tiempo_trasero = Column(String(20), nullable=True)
     instaladores_disponibles = Column(String(20), nullable=True)
+    estado_geografico = Column(String(50), nullable=True)
     ciudades_cobertura = Column(Text, nullable=True)
     zip_codes = Column(Text, nullable=True)
     zonas_no_trabajan = Column(Text, nullable=True)

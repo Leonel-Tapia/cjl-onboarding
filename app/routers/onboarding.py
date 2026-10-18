@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends, Form
+﻿from fastapi import APIRouter, Request, Depends, Form
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -61,7 +61,7 @@ async def submit_form(
     horario_lv: Optional[str] = Form(None), horario_sabado: Optional[str] = Form(None), horario_domingo: Optional[str] = Form(None),
     servicio_movil: Optional[str] = Form("false"), radio_millas: Optional[str] = Form(None), direccion_taller: Optional[str] = Form(None),
     tiempo_parabrisas: Optional[str] = Form(None), tiempo_lateral: Optional[str] = Form(None), tiempo_trasero: Optional[str] = Form(None),
-    instaladores_disponibles: Optional[str] = Form(None), ciudades_cobertura: Optional[str] = Form(None), zip_codes: Optional[str] = Form(None),
+    instaladores_disponibles: Optional[str] = Form(None), estado_geografico: Optional[str] = Form(None), ciudades_cobertura: Optional[str] = Form(None), zip_codes: Optional[str] = Form(None),
     zonas_no_trabajan: Optional[str] = Form(None), cobran_extra_movil: Optional[str] = Form("false"), cuanto_extra: Optional[str] = Form(None),
     promocion_actual: Optional[str] = Form(None), descuento_efectivo: Optional[str] = Form(None), promo_adas: Optional[str] = Form(None),
     promo_referidos: Optional[str] = Form(None), otra_promo: Optional[str] = Form(None), trabajan_aseguradoras: Optional[str] = Form("false"),
@@ -110,7 +110,7 @@ async def submit_form(
         numero_principal_grupo=numero_principal_grupo, garantias_json=garantias_json if isinstance(garantias_json, dict) else json.loads(garantias_json), texto_garantia_oficial=texto_garantia_oficial,
         horario_lv=horario_lv, horario_sabado=horario_sabado, horario_domingo=horario_domingo, servicio_movil=(servicio_movil == "true"), radio_millas=radio_millas, direccion_taller=direccion_taller,
         tiempo_parabrisas=tiempo_parabrisas, tiempo_lateral=tiempo_lateral, tiempo_trasero=tiempo_trasero, instaladores_disponibles=instaladores_disponibles,
-        ciudades_cobertura=ciudades_cobertura, zip_codes=zip_codes, zonas_no_trabajan=zonas_no_trabajan, cobran_extra_movil=(cobran_extra_movil == "true"), cuanto_extra=cuanto_extra,
+        estado_geografico=estado_geografico, ciudades_cobertura=ciudades_cobertura, zip_codes=zip_codes, zonas_no_trabajan=zonas_no_trabajan, cobran_extra_movil=(cobran_extra_movil == "true"), cuanto_extra=cuanto_extra,
         promocion_actual=promocion_actual, descuento_efectivo=descuento_efectivo, promo_adas=promo_adas, promo_referidos=promo_referidos, otra_promo=otra_promo,
         metodos_pago_json=metodos_pago_json if isinstance(metodos_pago_json, dict) else json.loads(metodos_pago_json), trabajan_aseguradoras=(trabajan_aseguradoras == "true"), aseguradoras_json=aseguradoras_json if isinstance(aseguradoras_json, dict) else json.loads(aseguradoras_json), manejan_deducibles=manejan_deducibles, como_cobran_claims=como_cobran_claims, aceptan_seguro_cita=(aceptan_seguro_cita == "true"),
         material_recibido=("material_recibido" in form), notas_material=notas_material, material_visual_json=material_visual_json,
