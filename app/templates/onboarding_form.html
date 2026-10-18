@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block title %}OptiGlass Onboarding Form{% endblock %}
 {% block content %}
 <h2 class="mb-1">Onboarding Document</h2>
@@ -11,24 +11,13 @@
             <tbody id="pricingBody">
                 <tr>
                     <td>
-                        <select class="form-select form-select-sm part-select" name="precio_parte[]">
-                            <option value="">-- Select Part --</option>
-                            {% for grupo, items in piezas_agrupadas.items() %}
-                            <optgroup label="{{ grupo }}">
-                                {% for p in items %}<option value="{{ p.part_dw }}">{{ p.part_dw }}</option>{% endfor %}
-                            </optgroup>
-                            {% endfor %}
-                            <option value="Other">Other</option>
-                        </select>
-                    </td>
-                    <td>
-                        <select class="form-select form-select-sm vehicle-select" name="precio_vehiculo[]">
-                            <option value="">-- Select Vehicle --</option>
-                            {% for v in vehiculos %}<option value="{{ v.marca }} {{ v.modelo }}">{{ v.marca }} {{ v.modelo }}</option>{% endfor %}
-                        </select>
-                    </td>
-                    <td><input type="number" step="0.01" min="0" class="form-control form-control-sm costo-input" name="precio_costo[]"></td>
-                    <td><input type="number" step="0.01" min="0" class="form-control form-control-sm precio-input" name="precio_venta[]"></td>
+    <input type="text" class="form-control form-control-sm part-input w-100" name="precio_parte[]" list="partList" placeholder="-- Select Part --" autocomplete="off">
+</td>
+<td>
+    <input type="text" class="form-control form-control-sm vehicle-input w-100" name="precio_vehiculo[]" list="vehicleList" placeholder="-- Select Vehicle --" autocomplete="off">
+</td>
+                    <td><input type="number" step="0.01" min="0" class="form-control form-control-sm costo-input w-100" name="precio_costo[]"></td>
+                    <td><input type="number" step="0.01" min="0" class="form-control form-control-sm precio-input w-100" name="precio_venta[]"></td>
                     <td><input type="text" class="form-control form-control-sm ganancia-display" readonly></td>
                     <td><input type="text" class="form-control form-control-sm margen-display" readonly></td>
                 </tr>
@@ -174,48 +163,39 @@
         <div class="mt-3"><button type="submit" class="btn btn-success btn-lg" onclick="return generateSeal()"><i class="fas fa-check"></i> Accept & Authorize</button></div>
         <input type="hidden" name="autoriza_cliente_sello" id="sealField">
     </div></div>
+<datalist id="partList">
+    {% for grupo, items in piezas_agrupadas.items() %}
+    {% for p in items %}<option value="{{ p.part_dw }}">{{ p.part_dw }}</option>{% endfor %}
+    {% endfor %}
+    <option value="Other">Other</option>
+</datalist>
+<datalist id="vehicleList">
+    {% for v in vehiculos %}<option value="{{ v.marca }} {{ v.modelo }}">{{ v.marca }} {{ v.modelo }}</option>{% endfor %}
+</datalist>
 </form>
 {% endblock %}
 {% block scripts %}
+
 <script>
-    function formatPhone(input) {
-        let value = input.value.replace(/\D/g, "");
-        if (value.length > 10) value = value.slice(0, 10);
-        if (value.length >= 7) input.value = '(' + value.slice(0,3) + ') ' + value.slice(3,6) + '-' + value.slice(6);
-        else if (value.length >= 4) input.value = '(' + value.slice(0,3) + ') ' + value.slice(3);
-        else if (value.length >= 1) input.value = '(' + value;
+document.addEventListener('input', function (e) {
+    if (e.target && (e.target.name === 'telefono_cotizaciones' || e.target.name === 'numero_principal_grupo')) {
+        let input = e.target;
+        let numbers = input.value.replace(/\D/g, '');
+        if (numbers.length > 10) numbers = numbers.substring(0, 10);
+        
+        let formatted = '';
+        if (numbers.length > 6) {
+            formatted = '(' + numbers.substring(0, 3) + ') ' + numbers.substring(3, 6) + '-' + numbers.substring(6);
+        } else if (numbers.length > 3) {
+            formatted = '(' + numbers.substring(0, 3) + ') ' + numbers.substring(3);
+        } else if (numbers.length > 0) {
+            formatted = '(' + numbers;
+        }
+        input.value = formatted;
     }
-    function initTomSelect(element) {
-        new TomSelect(element, { create: false, maxItems: 1, plugins: ['clear_button'], maxOptions: 5000, render: { option: function(d, e) { return '<div>' + e(d.text.split(' - ')[0]) + '</div>'; }, item: function(d, e) { return '<div>' + e(d.text.split(' - ')[0]) + '</div>'; } } });
-    }
-    function updateProfit(row) {
-        let c = parseFloat(row.querySelector('.costo-input').value) || 0;
-        let v = parseFloat(row.querySelector('.precio-input').value) || 0;
-        if (c < 0) { c = 0; row.querySelector('.costo-input').value = ''; }
-        if (v < 0) { v = 0; row.querySelector('.precio-input').value = ''; }
-        let g = v - c;
-        let m = c > 0 ? (g / c) * 100 : 0;
-        row.querySelector('.ganancia-display').value = '$' + g.toFixed(2);
-        row.querySelector('.margen-display').value = m.toFixed(1) + '%';
-    }
-    function bindPricingRow(row) {
-        row.querySelectorAll('.costo-input, .precio-input').forEach(i => i.addEventListener('input', () => updateProfit(row)));
-        initTomSelect(row.querySelector('.part-select')); initTomSelect(row.querySelector('.vehicle-select'));
-    }
-    function addPricingRow() {
-        const t = document.querySelector('#pricingBody');
-        const n = t.rows[0].cloneNode(true);
-        n.querySelectorAll('input').forEach(i => i.value = '');
-        n.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
-        t.appendChild(n); bindPricingRow(n);
-    }
-    document.querySelectorAll('#pricingBody tr').forEach(bindPricingRow);
-    function generateSeal() {
-        const name = document.getElementById('authName').value.trim();
-        if (!name) { alert('Please enter your full name.'); return false; }
-        const now = new Date(); const pad = n => String(n).padStart(2, '0');
-        document.getElementById('sealField').value = 'Authorized by: ' + name + ' — ' + now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes());
-        return true;
-    }
+});
 </script>
 {% endblock %}
+</body>
+</html>
+
