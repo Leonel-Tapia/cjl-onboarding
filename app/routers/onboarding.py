@@ -156,3 +156,4 @@ async def admin_update_status(id_interno: str, request: Request, key: str = "", 
     if registro:
         registro.estado = nuevo_estado; registro.status_changed_by = cambiado_por; registro.status_changed_at = datetime.now(); db.commit()
     return RedirectResponse(url=f"/onboarding/admin/view/{id_interno}?key={ADMIN_KEY}", status_code=303)
+# Force deploy 10/18/2026 15:17:36
