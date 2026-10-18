@@ -1,0 +1,380 @@
+﻿{% extends "base.html" %}
+{% block title %}OptiGlass Onboarding Form{% endblock %}
+{% block content %}
+<style>
+html { scroll-behavior: smooth; }
+#authSection { scroll-margin-top: 20px; }
+@media (max-width: 768px) {
+    #goToSignBtn span { display: none; }
+    #goToSignBtn { padding: 15px; border-radius: 50%; }
+}notepad app/templates/onboarding_form.htm
+</style>
+<div class="d-flex justify-content-end mb-2">
+    <div class="btn-group btn-group-sm">
+        <a href="/onboarding/es" class="btn btn-outline-primary">ES</a>
+        <a href="/onboarding/en" class="btn btn-outline-secondary">EN</a>
+    </div>
+</div>
+<h2 class="mb-1">Onboarding Document</h2>
+<p class="text-muted mb-4">Onboarding Document &times; CJL Creative Ideas Marketing <span class="float-end text-secondary" style="font-size: 0.85rem;"><i class="fas fa-history"></i> Última actualización del sistema: 18 de Octubre de 2026 - 08:24 PM</span></p>
+
+<form method="POST" action="/onboarding/submit" id="onboardingForm">
+    <!-- Botón flotante para ir a la firma -->
+    <a href="#authSection" id="goToSignBtn" style="position: fixed; bottom: 30px; right: 30px; z-index: 999; background: #198754; color: white; padding: 15px 20px; border-radius: 50px; text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold; display: flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#157347'" onmouseout="this.style.background='#198754'">
+        <span>Ir a la firma</span>
+        <i class="fas fa-arrow-down"></i>
+    </a>
+    <div class="card section-card"><div class="card-body">
+        <h5 class="section-title"><i class="fas fa-building"></i> Business Information</h5>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label required-label">Business Name</label>
+                <input type="text" class="form-control" name="nombre_negocio" placeholder="e.g. OptiGlass" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label required-label">Phone</label>
+                <input type="text" class="form-control" name="telefono_negocio" placeholder="e.g. (956) 123-4567" oninput="formatPhone(this)" required>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Address (Street)</label>
+                <input type="text" class="form-control" name="direccion_taller" placeholder="e.g. 123 Main St">
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">City</label>
+                <input type="text" class="form-control" name="ciudad" placeholder="e.g. McAllen">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">State</label>
+                <select class="form-select" name="estado_negocio">
+                    <option value="">-- Select --</option>
+                    <option value="AL">AL</option>
+                    <option value="AK">AK</option>
+                    <option value="AZ">AZ</option>
+                    <option value="AR">AR</option>
+                    <option value="CA">CA</option>
+                    <option value="CO">CO</option>
+                    <option value="CT">CT</option>
+                    <option value="DE">DE</option>
+                    <option value="FL">FL</option>
+                    <option value="GA">GA</option>
+                    <option value="HI">HI</option>
+                    <option value="ID">ID</option>
+                    <option value="IL">IL</option>
+                    <option value="IN">IN</option>
+                    <option value="IA">IA</option>
+                    <option value="KS">KS</option>
+                    <option value="KY">KY</option>
+                    <option value="LA">LA</option>
+                    <option value="ME">ME</option>
+                    <option value="MD">MD</option>
+                    <option value="MA">MA</option>
+                    <option value="MI">MI</option>
+                    <option value="MN">MN</option>
+                    <option value="MS">MS</option>
+                    <option value="MO">MO</option>
+                    <option value="MT">MT</option>
+                    <option value="NE">NE</option>
+                    <option value="NV">NV</option>
+                    <option value="NH">NH</option>
+                    <option value="NJ">NJ</option>
+                    <option value="NM">NM</option>
+                    <option value="NY">NY</option>
+                    <option value="NC">NC</option>
+                    <option value="ND">ND</option>
+                    <option value="OH">OH</option>
+                    <option value="OK">OK</option>
+                    <option value="OR">OR</option>
+                    <option value="PA">PA</option>
+                    <option value="RI">RI</option>
+                    <option value="SC">SC</option>
+                    <option value="SD">SD</option>
+                    <option value="TN">TN</option>
+                    <option value="TX">TX</option>
+                    <option value="UT">UT</option>
+                    <option value="VT">VT</option>
+                    <option value="VA">VA</option>
+                    <option value="WA">WA</option>
+                    <option value="WV">WV</option>
+                    <option value="WI">WI</option>
+                    <option value="WY">WY</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">ZIP Code</label>
+                <input type="text" class="form-control" name="codigo_postal" placeholder="e.g. 78501">
+            </div>
+        </div>
+    </div></div>
+    <div class="card section-card"><div class="card-body">
+        <h5 class="section-title"><i class="fas fa-dollar-sign"></i> 1. Pricing Structure</h5>
+        <table class="table table-sm table-bordered align-middle" id="pricingTable" style="overflow: visible;">
+            <thead class="table-light"><tr><th>Part DW</th><th>Vehicle</th><th>Your Glass Cost $</th><th>Final Sale Price $</th><th>Your Profit $</th><th>Margin %</th></tr></thead>
+            <tbody id="pricingBody">
+                <tr>
+                    <td>
+    <input type="text" class="form-control form-control-sm part-input w-100" name="precio_parte[]" list="partList" placeholder="-- Select Part --" autocomplete="off">
+</td>
+<td>
+    <input type="text" class="form-control form-control-sm vehicle-input w-100" name="precio_vehiculo[]" list="vehicleList" placeholder="-- Select Vehicle --" autocomplete="off">
+</td>
+                    <td><input type="number" step="0.01" min="0" class="form-control form-control-sm costo-input w-100" name="precio_costo[]"></td>
+                    <td><input type="number" step="0.01" min="0" class="form-control form-control-sm precio-input w-100" name="precio_venta[]"></td>
+                    <td><input type="text" class="form-control form-control-sm ganancia-display" readonly></td>
+                    <td><input type="text" class="form-control form-control-sm margen-display" readonly></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" class="btn btn-outline-primary btn-sm mt-2" onclick="addPricingRow()"><i class="fas fa-plus"></i> Add Row</button>
+    </div></div>
+    <div class="card section-card"><div class="card-body">
+        <h5 class="section-title"><i class="fas fa-envelope"></i> 2. Quotes Account</h5>
+        <div class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label required-label">Email for Quotes</label>
+                <input type="email" class="form-control" name="email_cotizaciones" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Phone</label>
+                <input type="text" class="form-control" name="telefono_cotizaciones" oninput="formatPhone(this)">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">System Used</label>
+                <select class="form-select" name="sistema_cotizaciones">
+                    <option value="">-- Select --</option>
+                    <option value="MyGrant">MyGrant</option>
+                    <option value="NAGS">NAGS</option>
+                    <option value="Manual">Manual</option>
+                    <option value="WhatsApp">WhatsApp</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Avg Time</label>
+                <input type="text" class="form-control" name="tiempo_respuesta" placeholder="e.g. 15 min">
+            </div>
+        </div>
+    </div></div>
+    <div class="card section-card"><div class="card-body">
+        <h5 class="section-title"><i class="fab fa-whatsapp"></i> 3. WhatsApp Group for Scheduling</h5>
+        <label class="form-label">Main Phone for Group</label>
+        <input type="text" class="form-control" name="numero_principal_grupo" oninput="formatPhone(this)">
+    </div></div>
+    <div class="card section-card"><div class="card-body">
+        <h5 class="section-title"><i class="fas fa-shield-alt"></i> 4. Tipo de Garantías que Ofrecen</h5>
+        <div class="mb-2">
+            <label class="form-label d-block"><input type="checkbox" name="garantias[]" value="Fugas y filtraciones (por vida)"> Garantía contra fugas y filtraciones (de por vida)</label>
+            <label class="form-label d-block"><input type="checkbox" name="garantias[]" value="Mano de obra / instalacion"> Garantía de mano de obra / instalación</label>
+            <label class="form-label d-block"><input type="checkbox" name="garantias[]" value="Fabrica del vidrio"> Garantía de fábrica del vidrio</label>
+            <label class="form-label d-block"><input type="checkbox" name="garantias[]" value="Molduras y empaques"> Garantía en molduras y empaques</label>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Otro (especificar)</label><input type="text" class="form-control" name="garantia_otro"></div>
+            <div class="col-12"><label class="form-label">Texto oficial de garantía (para usar en anuncios)</label><textarea class="form-control" name="texto_garantia_oficial" rows="2"></textarea></div>
+        </div>
+    </div></div>
+
+    <div class="card section-card"><div class="card-body">
+        <h5 class="section-title"><i class="fas fa-clock"></i> 5. Información Básica Operativa</h5>
+        <div class="row g-3">
+            <div class="col-md-3"><label class="form-label">Horario L-V</label><input type="text" class="form-control" name="horario_lv" placeholder="8:00 AM a 6:00 PM"></div>
+            <div class="col-md-3"><label class="form-label">Sábado</label><input type="text" class="form-control" name="horario_sabado" placeholder="9:00 AM a 2:00 PM"></div>
+            <div class="col-md-3"><label class="form-label">Domingo</label><input type="text" class="form-control" name="horario_domingo" placeholder="Cerrado"></div>
+            <div class="col-md-3"><label class="form-label">Días laborales / Cerrado</label><input type="text" class="form-control" name="dias_laborales"></div>
+        </div>
+        <hr>
+        <div class="row g-3">
+            <div class="col-md-3"><label class="form-label">¿Servicio móvil a domicilio?</label><select class="form-select" name="servicio_movil"><option value="No">No</option><option value="Si">Sí</option></select></div>
+            <div class="col-md-3"><label class="form-label">Radio en millas</label><input type="text" class="form-control" name="radio_millas" placeholder="ej. 20 millas"></div>
+            <div class="col-md-6"><label class="form-label">Dirección taller</label><input type="text" class="form-control" name="direccion_taller"></div>
+        </div>
+        <hr>
+        <label class="form-label fw-bold">Tiempo promedio de instalación</label>
+        <div class="row g-3">
+            <div class="col-md-3"><label class="form-label small">Parabrisas (min)</label><input type="text" class="form-control" name="tiempo_parabrisas" placeholder="ej. 60"></div>
+            <div class="col-md-3"><label class="form-label small">Lateral (min)</label><input type="text" class="form-control" name="tiempo_lateral" placeholder="ej. 30"></div>
+            <div class="col-md-3"><label class="form-label small">Trasero (min)</label><input type="text" class="form-control" name="tiempo_trasero" placeholder="ej. 45"></div>
+            <div class="col-md-3"><label class="form-label small">¿Cuántos instaladores disponibles?</label><input type="text" class="form-control" name="instaladores_disponibles" placeholder="ej. 3"></div>
+        </div>
+    </div></div>
+
+    <div class="card section-card"><div class="card-body">
+        <h5 class="section-title"><i class="fas fa-map-marked-alt"></i> 6. Áreas de Cobertura</h5>
+        <div class="row g-3">
+            <div class="col-12"><label class="form-label">Ciudades que cubren (McAllen, Edinburg, Mission, Pharr, etc.)</label><input type="text" class="form-control" name="ciudades_cobertura"></div>
+            <div class="col-12"><label class="form-label">Zip codes que cubren</label><input type="text" class="form-control" name="zip_codes"></div>
+            <div class="col-12"><label class="form-label">¿Zonas donde NO trabajan?</label><input type="text" class="form-control" name="zonas_no_trabajan"></div>
+        </div>
+        <hr>
+        <div class="row g-3">
+            <div class="col-md-4"><label class="form-label">¿Cobran extra por móvil lejano?</label><select class="form-select" name="cobran_extra_movil"><option value="No">No</option><option value="Si">Sí</option></select></div>
+            <div class="col-md-4"><label class="form-label">¿Cuánto? ($)</label><input type="text" class="form-control" name="cuanto_extra" placeholder="ej. 25"></div>
+        </div>
+    </div></div>
+
+    <div class="card section-card"><div class="card-body">
+        <h5 class="section-title"><i class="fas fa-tags"></i> 7. Promociones Activas</h5>
+        <div class="row g-3">
+            <div class="col-md-6"><label class="form-label">Promoción actual</label><input type="text" class="form-control" name="promocion_actual"></div>
+            <div class="col-md-6"><label class="form-label">Descuento por pago en efectivo</label><input type="text" class="form-control" name="descuento_efectivo" placeholder="ej. 10%"></div>
+            <div class="col-md-4"><label class="form-label">Promo ADAS / Calibración</label><input type="text" class="form-control" name="promo_adas"></div>
+            <div class="col-md-4"><label class="form-label">Promo por referidos</label><input type="text" class="form-control" name="promo_referidos"></div>
+            <div class="col-md-4"><label class="form-label">Otra promo</label><input type="text" class="form-control" name="otra_promo"></div>
+        </div>
+    </div></div>
+
+    <div class="card section-card"><div class="card-body">
+        <h5 class="section-title"><i class="fas fa-credit-card"></i> 8. Métodos de Pago y Aseguradoras</h5>
+        <label class="form-label fw-bold">Métodos de pago aceptados</label>
+        <div class="mb-2">
+            <label class="form-label d-inline me-3"><input type="checkbox" name="metodos_pago[]" value="Efectivo"> Efectivo</label>
+            <label class="form-label d-inline me-3"><input type="checkbox" name="metodos_pago[]" value="Zelle"> Zelle</label>
+            <label class="form-label d-inline me-3"><input type="checkbox" name="metodos_pago[]" value="Tarjeta credito/debito"> Tarjeta crédito/débito</label>
+            <label class="form-label d-inline me-3"><input type="checkbox" name="metodos_pago[]" value="Transferencia"> Transferencia</label>
+            <label class="form-label d-inline"><input type="checkbox" name="metodos_pago[]" value="Financiamiento"> Financiamiento</label>
+        </div>
+        <hr>
+        <div class="row g-3">
+            <div class="col-md-3"><label class="form-label">¿Trabajan con aseguradoras?</label><select class="form-select" name="trabajan_aseguradoras"><option value="No">No</option><option value="Si">Sí</option></select></div>
+            <div class="col-md-9">
+                <label class="form-label">¿Cuáles aseguradoras?</label><br>
+                <label class="form-label d-inline me-3"><input type="checkbox" name="aseguradoras[]" value="State Farm"> State Farm</label>
+                <label class="form-label d-inline me-3"><input type="checkbox" name="aseguradoras[]" value="Geico"> Geico</label>
+                <label class="form-label d-inline me-3"><input type="checkbox" name="aseguradoras[]" value="Progressive"> Progressive</label>
+                <label class="form-label d-inline me-3"><input type="checkbox" name="aseguradoras[]" value="Allstate"> Allstate</label>
+                <label class="form-label d-inline"><input type="checkbox" name="aseguradoras[]" value="Otra"> Otra</label>
+            </div>
+            <div class="col-md-6"><label class="form-label">¿Manejan deducibles?</label><select class="form-select" name="manejan_deducibles">
+                    <option value="No">No</option>
+                    <option value="Si">Sí</option>
+                </select></div>
+            <div class="col-md-6"><label class="form-label">¿Aceptan seguro con cita previa?</label><select class="form-select" name="aceptan_seguro_cita"><option value="No">No</option><option value="Si">Sí</option></select></div>
+            <div class="col-12"><label class="form-label">¿Cómo cobran claims?</label><textarea class="form-control" name="como_cobran_claims" rows="2"></textarea></div>
+        </div>
+    </div></div>
+
+    <div class="card section-card"><div class="card-body">
+        <h5 class="section-title"><i class="fas fa-camera"></i> 9. Material Visual Requerido</h5>
+        <p class="text-muted small">Marque lo que ya tiene listo para compartir:</p>
+        <label class="form-label d-block"><input type="checkbox" name="material_visual[]" value="Logotipos PNG + vector"> Logotipos en PNG transparente + vector AI/EPS/PDF</label>
+        <label class="form-label d-block"><input type="checkbox" name="material_visual[]" value="15-20 fotos trabajos reales"> 15-20 fotos de trabajos reales (instalaciones, taller, móvil)</label>
+        <label class="form-label d-block"><input type="checkbox" name="material_visual[]" value="3-5 videos cortos"> 3-5 videos cortos verticales de 15-30 seg</label>
+        <label class="form-label d-block"><input type="checkbox" name="material_visual[]" value="Fotos antes/despues"> Fotos antes/después</label>
+        <label class="form-label d-block"><input type="checkbox" name="material_visual[]" value="Fotos equipo/uniformes"> Fotos del equipo / uniformes</label>
+        <div class="mt-2"><label class="form-label">Notas sobre el material</label><textarea class="form-control" name="notas_material" rows="2"></textarea></div>
+    </div></div>
+
+    <div class="card section-card"><div class="card-body">
+        <h5 class="section-title"><i class="fas fa-file-contract"></i> 10. Condiciones y Términos del Servicio CJL</h5>
+        <ol class="small text-muted mb-3">
+            <li>Depósito inicial: $500 USD para arranque + presupuesto de ads.</li>
+            <li>Aprobación de contenido digital: máx 24h.</li>
+            <li>Reporte semanal: cada lunes.</li>
+            <li>Un mes gratis de prueba de sistema POS: valor $297 USD.</li>
+            <li>Número de coordinación durante el día (8am-6pm hora McAllen).</li>
+            <li>Propiedad: Todas las campañas se crean en el Business Manager del cliente.</li>
+            <li>Modelo CJL: $500/mes gestión + $30-$40 solo por cita PAGADA y completada.</li>
+            <li>Política de cancelación de citas.</li>
+        </ol>
+        <label class="form-label fw-bold"><input type="checkbox" name="acepta_terminos" id="termsCheckbox" required> Acepto los términos y condiciones del servicio</label>
+    </div></div>
+
+    <div class="card section-card border-success mt-4" id="authSection"><div class="card-body">
+        <h5 class="section-title text-success"><i class="fas fa-check-circle"></i> Client Authorization</h5>
+        <div class="row g-3">
+            <div class="col-md-6"><label class="form-label required-label">Full Name <small style="color:#999;" id="authNameHint">(marque los términos primero)</small></label><input type="text" class="form-control" name="autoriza_cliente_nombre" id="authName" required disabled></div>
+        </div>
+        <div class="mt-3" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+
+            <button type="submit" class="btn btn-success btn-lg" id="submitBtn" onclick="return generateSeal()" disabled>
+                <i class="fas fa-check"></i> Accept & Authorize
+            </button>
+        </div>
+        <input type="hidden" name="autoriza_cliente_sello" id="sealField">
+    </div></div>
+<datalist id="partList">
+    {% for grupo, items in piezas_agrupadas.items() %}
+    {% for p in items %}<option value="{{ p.part_dw }}">{{ p.part_dw }}</option>{% endfor %}
+    {% endfor %}
+    <option value="Other">Other</option>
+</datalist>
+<datalist id="vehicleList">
+    {% for v in vehiculos %}<option value="{{ v.marca }} {{ v.modelo }}">{{ v.marca }} {{ v.modelo }}</option>{% endfor %}
+</datalist>
+</form>
+{% endblock %}
+{% block scripts %}
+
+<script>
+    function formatPhoneInput(input) {
+        let numbers = input.value.replace(/\D/g, '');
+        if (numbers.length > 10) numbers = numbers.substring(0, 10);
+        let formatted = '';
+        if (numbers.length > 6) {
+            formatted = '(' + numbers.substring(0, 3) + ') ' + numbers.substring(3, 6) + '-' + numbers.substring(6);
+        } else if (numbers.length > 3) {
+            formatted = '(' + numbers.substring(0, 3) + ') ' + numbers.substring(3);
+        } else if (numbers.length > 0) {
+            formatted = '(' + numbers;
+        }
+        input.value = formatted;
+    }
+
+document.addEventListener('input', function (e) {
+    if (e.target && (e.target.name === 'telefono_cotizaciones' || e.target.name === 'numero_principal_grupo')) {
+        let input = e.target;
+        let numbers = input.value.replace(/\D/g, '');
+        if (numbers.length > 10) numbers = numbers.substring(0, 10);
+        
+        let formatted = '';
+        if (numbers.length > 6) {
+            formatted = '(' + numbers.substring(0, 3) + ') ' + numbers.substring(3, 6) + '-' + numbers.substring(6);
+        } else if (numbers.length > 3) {
+            formatted = '(' + numbers.substring(0, 3) + ') ' + numbers.substring(3);
+        } else if (numbers.length > 0) {
+            formatted = '(' + numbers;
+        }
+        input.value = formatted;
+    }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+
+    const termsCheckbox = document.getElementById('termsCheckbox');
+    const authName = document.getElementById('authName');
+    const hint = document.getElementById('authNameHint');
+
+    const submitBtn = document.getElementById('submitBtn');
+
+    function updateSubmitBtn() {
+        if (termsCheckbox && authName && submitBtn) {
+            const ready = termsCheckbox.checked && authName.value.trim().length > 0;
+            submitBtn.disabled = !ready;
+            submitBtn.style.opacity = ready ? '1' : '0.5';
+            submitBtn.style.cursor = ready ? 'pointer' : 'not-allowed';
+        }
+    }
+
+    if (termsCheckbox && authName) {
+        termsCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                authName.disabled = false;
+                authName.focus();
+                if (hint) hint.style.display = 'none';
+            } else {
+                authName.disabled = true;
+                authName.value = '';
+                if (hint) hint.style.display = 'inline';
+            }
+            updateSubmitBtn();
+        });
+
+        authName.addEventListener('input', updateSubmitBtn);
+        updateSubmitBtn();
+    }
+});
+</script>
+{% endblock %}
+</body>
+</html>
+
