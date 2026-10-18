@@ -53,6 +53,7 @@ class OnboardingOptiGlass(Base):
     aceptan_seguro_cita = Column(Boolean, default=False)
     material_recibido = Column(Boolean, default=False)
     notas_material = Column(Text, nullable=True)
+    material_visual_json = Column(JSONB, nullable=True)
     acepta_terminos = Column(Boolean, default=False)
     autoriza_cliente = Column(Boolean, default=False)
     autoriza_cliente_nombre = Column(String(120), nullable=True)

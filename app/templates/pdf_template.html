@@ -5,7 +5,7 @@
         @page { size: letter; margin: 2cm; }
         body { font-family: Helvetica, Arial, sans-serif; font-size: 10pt; color: #333; }
         h1 { color: #0d6efd; font-size: 18pt; border-bottom: 2px solid #0d6efd; padding-bottom: 5px; }
-        h2 { color: #0d6efd; font-size: 14pt; margin-top: 20px; }
+        h2 { color: #0d6efd; font-size: 14pt; margin-top: 20px; border-bottom: 1px solid #dee2e6; padding-bottom: 2px; }
         .header { text-align: center; margin-bottom: 30px; }
         .info-box { background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
         .info-row { margin-bottom: 8px; }
@@ -16,40 +16,127 @@
         .footer { margin-top: 50px; text-align: center; font-size: 8pt; color: #777; }
         .signature-box { border: 2px solid #198754; padding: 15px; border-radius: 5px; margin-top: 30px; background-color: #d1e7dd; text-align: center; }
         .signature-text { font-size: 12pt; font-weight: bold; color: #198754; }
+        ul { margin-top: 5px; margin-bottom: 15px; padding-left: 20px; }
+        li { margin-bottom: 3px; }
     </style>
 </head>
 <body>
     <div style="text-align: center; margin-bottom: 10px;"><img src="app/static/images/cjl.jpg" style="height: 80px;"></div>
     <div class="header"><h1>Onboarding Document</h1><p><strong>OptiGlass+ McAllen Texas</strong> &times; CJL Creative Ideas Marketing</p></div>
+    
     <div class="info-box">
         <div class="info-row"><span class="label">Reference ID:</span> {{ registro.id_interno }}</div>
         <div class="info-row"><span class="label">Date Submitted:</span> {{ registro.fecha_submit.strftime('%Y-%m-%d %H:%M:%S') }} UTC</div>
-        <div class="info-row"><span class="label">Email for Quotes:</span> {{ registro.email_cotizaciones }}</div>
+        <div class="info-row"><span class="label">Email for Quotes:</span> {{ registro.email_cotizaciones or 'N/A' }}</div>
     </div>
+
+    <!-- 1. PRICING STRUCTURE -->
     <h2>1. Pricing Structure</h2>
-    <table><thead><tr><th>Part DW</th><th>Vehicle</th><th>Your Glass Cost $</th><th>Final Sale Price $</th><th>Your Profit $</th><th>Margin %</th></tr></thead>
-    <tbody>{% for p in registro.precios_json %}<tr><td>{{ p.parte }}</td><td>{{ p.vehiculo }}</td><td>${{ p.costo }}</td><td>${{ p.venta }}</td><td>${{ p.ganancia }}</td><td>{{ p.margen }}%</td></tr>{% endfor %}</tbody></table>
+    <table>
+        <thead><tr><th>Part DW</th><th>Vehicle</th><th>Your Cost $</th><th>Sale Price $</th><th>Your Profit $</th><th>Margin %</th></tr></thead>
+        <tbody>
+            {% for p in registro.precios_json %}
+            <tr><td>{{ p.parte }}</td><td>{{ p.vehiculo }}</td><td>${{ p.costo }}</td><td>${{ p.venta }}</td><td>${{ p.ganancia }}</td><td>{{ p.margen }}%</td></tr>
+            {% else %}
+            <tr><td colspan="6">No data provided.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 2. QUOTES ACCOUNT -->
     <h2>2. Quotes Account</h2>
     <p><strong>Email:</strong> {{ registro.email_cotizaciones or 'N/A' }}</p>
     <p><strong>Phone:</strong> {{ registro.telefono_cotizaciones or 'N/A' }}</p>
     <p><strong>System Used:</strong> {{ registro.sistema_cotizaciones or 'N/A' }}</p>
     <p><strong>Average Response Time:</strong> {{ registro.tiempo_respuesta or 'N/A' }}</p>
+
+    <!-- 3. WHATSAPP GROUP -->
     <h2>3. WhatsApp Group</h2>
     <p><strong>Main Phone:</strong> {{ registro.numero_principal_grupo or 'N/A' }}</p>
+
+    <!-- 4. WARRANTIES -->
     <h2>4. Warranties Offered</h2>
     <ul>
         {% if registro.garantias_json.fugas %}<li>Warranty against leaks and seepage (lifetime)</li>{% endif %}
         {% if registro.garantias_json.mano_obra %}<li>Labor / installation warranty</li>{% endif %}
         {% if registro.garantias_json.fabrica %}<li>Glass factory warranty</li>{% endif %}
         {% if registro.garantias_json.molduras %}<li>Warranty on moldings and seals</li>{% endif %}
-        {% if registro.garantias_json.otro %}<li>Other</li>{% endif %}
+        {% if registro.garantias_json.otro %}<li>Other: {{ registro.garantias_json.otro }}</li>{% endif %}
+        {% if not registro.garantias_json.fugas and not registro.garantias_json.mano_obra and not registro.garantias_json.fabrica and not registro.garantias_json.molduras and not registro.garantias_json.otro %}<li>None selected</li>{% endif %}
     </ul>
     {% if registro.texto_garantia_oficial %}<p><strong>Official Warranty Text:</strong> {{ registro.texto_garantia_oficial }}</p>{% endif %}
+
+    <!-- 5. OPERATIONAL INFO -->
+    <h2>5. Operational Info</h2>
+    <p><strong>Business Hours:</strong> Mon-Fri: {{ registro.horario_lv or 'N/A' }} | Sat: {{ registro.horario_sabado or 'N/A' }} | Sun: {{ registro.horario_domingo or 'N/A' }}</p>
+    <p><strong>Mobile Service:</strong> {{ 'Yes' if registro.servicio_movil else 'No' }}</p>
+    {% if registro.servicio_movil %}<p><strong>Service Radius:</strong> {{ registro.radio_millas or 'N/A' }} miles</p>{% endif %}
+    <p><strong>Workshop Address:</strong> {{ registro.direccion_taller or 'N/A' }}</p>
+    <p><strong>Installation Times:</strong> Windshield: {{ registro.tiempo_parabrisas or 'N/A' }} | Side: {{ registro.tiempo_lateral or 'N/A' }} | Rear: {{ registro.tiempo_trasero or 'N/A' }}</p>
+    <p><strong>Available Installers:</strong> {{ registro.instaladores_disponibles or 'N/A' }}</p>
+
+    <!-- 6. COVERAGE -->
+    <h2>6. Coverage</h2>
+    <p><strong>Cities:</strong> {{ registro.ciudades_cobertura or 'N/A' }}</p>
+    <p><strong>Zip Codes:</strong> {{ registro.zip_codes or 'N/A' }}</p>
+    <p><strong>Areas NOT covered:</strong> {{ registro.zonas_no_trabajan or 'N/A' }}</p>
+    <p><strong>Extra charge for mobile?</strong> {{ 'Yes' if registro.cobran_extra_movil else 'No' }} {% if registro.cobran_extra_movil %}({{ registro.cuanto_extra or 'N/A' }}){% endif %}</p>
+
+    <!-- 7. PROMOTIONS -->
+    <h2>7. Promotions</h2>
+    <p><strong>Current Promotion:</strong> {{ registro.promocion_actual or 'N/A' }}</p>
+    <p><strong>Cash Discount:</strong> {{ registro.descuento_efectivo or 'N/A' }}</p>
+    <p><strong>ADAS Promotion:</strong> {{ registro.promo_adas or 'N/A' }}</p>
+    <p><strong>Referral Promotion:</strong> {{ registro.promo_referidos or 'N/A' }}</p>
+    <p><strong>Other:</strong> {{ registro.otra_promo or 'N/A' }}</p>
+
+    <!-- 8. PAYMENT METHODS & INSURANCE -->
+    <h2>8. Payment Methods & Insurance</h2>
+    <p><strong>Payment Methods:</strong> 
+        {% if registro.metodos_pago_json.efectivo %}Cash{% endif %}
+        {% if registro.metodos_pago_json.zelle %}, Zelle{% endif %}
+        {% if registro.metodos_pago_json.tarjeta %}, Card{% endif %}
+        {% if registro.metodos_pago_json.transferencia %}, Transfer{% endif %}
+        {% if registro.metodos_pago_json.financiamiento %}, Financing{% endif %}
+        {% if not registro.metodos_pago_json.efectivo and not registro.metodos_pago_json.zelle and not registro.metodos_pago_json.tarjeta and not registro.metodos_pago_json.transferencia and not registro.metodos_pago_json.financiamiento %}None selected{% endif %}
+    </p>
+    <p><strong>Work with Insurances?</strong> {{ 'Yes' if registro.trabajan_aseguradoras else 'No' }}</p>
+    {% if registro.trabajan_aseguradoras %}
+    <p><strong>Insurances:</strong> 
+        {% if registro.aseguradoras_json.state_farm %}State Farm{% endif %}
+        {% if registro.aseguradoras_json.geico %}, Geico{% endif %}
+        {% if registro.aseguradoras_json.progressive %}, Progressive{% endif %}
+        {% if registro.aseguradoras_json.allstate %}, Allstate{% endif %}
+        {% if registro.aseguradoras_json.otra %}, Other{% endif %}
+    </p>
+    <p><strong>Deductibles:</strong> {{ registro.manejan_deducibles or 'N/A' }}</p>
+    <p><strong>Claims Processing:</strong> {{ registro.como_cobran_claims or 'N/A' }}</p>
+    <p><strong>Accept Insurance Appointment?</strong> {{ 'Yes' if registro.aceptan_seguro_cita else 'No' }}</p>
+    {% endif %}
+
+    <!-- 9. VISUAL MATERIAL -->
+    <h2>9. Visual Material</h2>
+    <p><strong>Material Received:</strong> {{ 'Yes' if registro.material_recibido else 'No' }}</p>
+    <p><strong>Notes:</strong> {{ registro.notas_material or 'N/A' }}</p>
+    {% if registro.material_visual_json %}
+        <p><strong>Specific Material Items:</strong> 
+            {% if registro.material_visual_json.logo %}Logo {% endif %}
+            {% if registro.material_visual_json.fotos_taller %}Workshop Photos {% endif %}
+            {% if registro.material_visual_json.fotos_trabajos %}Job Photos {% endif %}
+            {% if registro.material_visual_json.video %}Video {% endif %}
+            {% if registro.material_visual_json.otro %}Other: {{ registro.material_visual_json.otro }}{% endif %}
+        </p>
+    {% endif %}
+
+    <!-- 10. TERMS & SIGNATURES -->
+    <h2>10. Terms & Signatures</h2>
     <div class="signature-box">
         <p class="signature-text">CLIENT AUTHORIZATION</p>
         <p>I confirm that I authorize CJL Creative Ideas Marketing to start the onboarding process.</p>
         <br><p><strong>{{ registro.autoriza_cliente_sello }}</strong></p><p>IP Address: {{ registro.autoriza_cliente_ip }}</p>
+        <p>Date: {{ registro.autoriza_cliente_fecha.strftime('%Y-%m-%d %H:%M') if registro.autoriza_cliente_fecha else 'N/A' }}</p>
     </div>
+
     <div class="footer">CJL Creative Ideas Marketing &mdash; Javier Díaz | César Galaviz | Leonel Tapia<br>We work for results.</div>
 </body>
 </html>

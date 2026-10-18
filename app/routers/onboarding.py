@@ -22,12 +22,10 @@ def generate_id_interno(db: Session) -> str:
     year = datetime.utcnow().year
     prefix = f"CJL-OPT-{year}-"
     
-    # Pedir a la BD el ID más alto que exista con este prefijo
-    ultimo_id = db.query(func.max(OnboardingOptiGlass.id_interno)).filter(
-        OnboardingOptiGlass.id_interno.like(f"{prefix}%")
-    ).scalar()
+    # Fix: Usar func.max directo sin LIKE (Lección aprendida)
+    ultimo_id = db.query(func.max(OnboardingOptiGlass.id_interno)).scalar()
     
-    if ultimo_id:
+    if ultimo_id and ultimo_id.startswith(prefix):
         try:
             numero = int(ultimo_id.split("-")[-1])
             return f"{prefix}{numero + 1:04d}"
@@ -40,7 +38,7 @@ def generate_id_interno(db: Session) -> str:
 async def show_form(request: Request, db: Session = Depends(get_db)):
     vehiculos = db.query(VehiculoCatalogo).filter(VehiculoCatalogo.activo == True).order_by(VehiculoCatalogo.marca, VehiculoCatalogo.modelo).all()
     piezas_raw = db.query(PiezaCatalogo).filter(PiezaCatalogo.activo == True).all()
-    
+
     grupos = {}
     for p in piezas_raw:
         prefijo = p.part_dw[:2] if len(p.part_dw) >= 2 else "OT"
@@ -49,7 +47,7 @@ async def show_form(request: Request, db: Session = Depends(get_db)):
         if nombre_grupo not in grupos:
             grupos[nombre_grupo] = []
         grupos[nombre_grupo].append(p)
-    
+
     return templates.TemplateResponse(request=request, name="onboarding_form.html", context={"vehiculos": vehiculos, "piezas_agrupadas": grupos})
 
 @router.post("/submit")
@@ -69,7 +67,7 @@ async def submit_form(
     notas_material: Optional[str] = Form(None), autoriza_cliente_nombre: str = Form(...), autoriza_cliente_sello: Optional[str] = Form(None),
 ):
     form = await request.form()
-    # Leemos los checkboxes con el mismo nombre que se puso en el HTML (garantias[], metodos_pago[], aseguradoras[], material_visual[])
+    # Leemos los checkboxes con el mismo nombre que se puso en el HTML
     garantias_list = form.getlist("garantias[]")
     garantias_json = {"fugas": "Fugas y filtraciones (por vida)" in garantias_list, "mano_obra": "Mano de obra / instalacion" in garantias_list, "fabrica": "Fabrica del vidrio" in garantias_list, "molduras": "Molduras y empaques" in garantias_list, "otro": form.get("garantia_otro", "")}
 
@@ -78,6 +76,15 @@ async def submit_form(
 
     aseguradoras_list = form.getlist("aseguradoras[]")
     aseguradoras_json = {"state_farm": "State Farm" in aseguradoras_list, "geico": "Geico" in aseguradoras_list, "progressive": "Progressive" in aseguradoras_list, "allstate": "Allstate" in aseguradoras_list, "otra": "Otra" in aseguradoras_list}
+
+    material_visual_list = form.getlist("material_visual[]")
+    material_visual_json = {
+        "logo": "Logo" in material_visual_list,
+        "fotos_taller": "Fotos del taller" in material_visual_list,
+        "fotos_trabajos": "Fotos de trabajos" in material_visual_list,
+        "video": "Video" in material_visual_list,
+        "otro": form.get("material_otro", "")
+    }
 
     partes = form.getlist("precio_parte[]")
     vehiculos_form = form.getlist("precio_vehiculo[]")
@@ -95,9 +102,6 @@ async def submit_form(
     id_interno = generate_id_interno(db)
     client_ip = request.client.host if request.client else None
 
-    # Forzamos a que la fecha sea exactamente la hora actual local sin microsegundos problemáticos
-    # Usaremos func.now() directamente en el modelo
-
     registro = OnboardingOptiGlass(
         id_interno=id_interno, fecha_submit=func.now(), estado="pending", precios_json=precios if isinstance(precios, list) else json.loads(precios),
         email_cotizaciones=email_cotizaciones, telefono_cotizaciones=telefono_cotizaciones, sistema_cotizaciones=sistema_cotizaciones, tiempo_respuesta=tiempo_respuesta,
@@ -107,7 +111,8 @@ async def submit_form(
         ciudades_cobertura=ciudades_cobertura, zip_codes=zip_codes, zonas_no_trabajan=zonas_no_trabajan, cobran_extra_movil=(cobran_extra_movil == "true"), cuanto_extra=cuanto_extra,
         promocion_actual=promocion_actual, descuento_efectivo=descuento_efectivo, promo_adas=promo_adas, promo_referidos=promo_referidos, otra_promo=otra_promo,
         metodos_pago_json=metodos_pago_json if isinstance(metodos_pago_json, dict) else json.loads(metodos_pago_json), trabajan_aseguradoras=(trabajan_aseguradoras == "true"), aseguradoras_json=aseguradoras_json if isinstance(aseguradoras_json, dict) else json.loads(aseguradoras_json), manejan_deducibles=manejan_deducibles, como_cobran_claims=como_cobran_claims, aceptan_seguro_cita=(aceptan_seguro_cita == "true"),
-        material_recibido=("material_recibido" in form), notas_material=notas_material, acepta_terminos=("acepta_terminos" in form),
+        material_recibido=("material_recibido" in form), notas_material=notas_material, material_visual_json=material_visual_json,
+        acepta_terminos=("acepta_terminos" in form),
         autoriza_cliente=True, autoriza_cliente_nombre=autoriza_cliente_nombre, autoriza_cliente_sello=autoriza_cliente_sello, autoriza_cliente_fecha=func.now(), autoriza_cliente_ip=client_ip,
     )
     db.add(registro); db.commit(); db.refresh(registro)
