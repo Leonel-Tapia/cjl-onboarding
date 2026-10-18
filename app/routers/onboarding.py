@@ -34,8 +34,8 @@ def generate_id_interno(db: Session) -> str:
             
     return f"{prefix}0001"
 
-@router.get("/{lang}", response_class=HTMLResponse)
-async def show_form(request: Request, lang: str = "es", db: Session = Depends(get_db)):
+@router.get("", response_class=HTMLResponse)
+async def show_form(request: Request, db: Session = Depends(get_db)):
     vehiculos = db.query(VehiculoCatalogo).filter(VehiculoCatalogo.activo == True).order_by(VehiculoCatalogo.marca, VehiculoCatalogo.modelo).all()
     piezas_raw = db.query(PiezaCatalogo).filter(PiezaCatalogo.activo == True).all()
 
@@ -48,8 +48,7 @@ async def show_form(request: Request, lang: str = "es", db: Session = Depends(ge
             grupos[nombre_grupo] = []
         grupos[nombre_grupo].append(p)
 
-    template_name = "onboarding_form_en.html" if lang == "en" else "onboarding_form.html"
-    return templates.TemplateResponse(request=request, name=template_name, context={"vehiculos": vehiculos, "piezas_agrupadas": grupos, "lang": lang})
+    return templates.TemplateResponse(request=request, name="onboarding_form.html", context={"vehiculos": vehiculos, "piezas_agrupadas": grupos})
 
 @router.post("/submit")
 async def submit_form(
