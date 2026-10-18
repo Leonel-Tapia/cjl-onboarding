@@ -53,6 +53,8 @@ async def show_form(request: Request, db: Session = Depends(get_db)):
 @router.post("/submit")
 async def submit_form(
     request: Request, db: Session = Depends(get_db),
+    nombre_negocio: str = Form(...), telefono_negocio: Optional[str] = Form(None),
+    ciudad: Optional[str] = Form(None), estado_negocio: Optional[str] = Form(None), codigo_postal: Optional[str] = Form(None),
     email_cotizaciones: str = Form(...), telefono_cotizaciones: Optional[str] = Form(None),
     sistema_cotizaciones: Optional[str] = Form(None), tiempo_respuesta: Optional[str] = Form(None),
     numero_principal_grupo: Optional[str] = Form(None), texto_garantia_oficial: Optional[str] = Form(None),

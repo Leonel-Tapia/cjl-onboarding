@@ -1,9 +1,32 @@
 ﻿{% extends "base.html" %}
 {% block title %}OptiGlass Onboarding Form{% endblock %}
 {% block content %}
+<style>
+html { scroll-behavior: smooth; }
+#authSection { scroll-margin-top: 20px; }
+@media (max-width: 768px) {
+    #goToSignBtn span { display: none; }
+    #goToSignBtn { padding: 15px; border-radius: 50%; }
+}
+</style>
 <h2 class="mb-1">Onboarding Document</h2>
-<p class="text-muted mb-4">OptiGlass+ McAllen Texas &times; CJL Creative Ideas Marketing</p>
+<p class="text-muted mb-4">Onboarding Document &times; CJL Creative Ideas Marketing</p>
 <form method="POST" action="/onboarding/submit" id="onboardingForm">
+    <!-- Botón flotante para ir a la firma -->
+    <a href="#authSection" id="goToSignBtn" style="position: fixed; bottom: 30px; right: 30px; z-index: 999; background: #198754; color: white; padding: 15px 20px; border-radius: 50px; text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); font-weight: bold; display: flex; align-items: center; gap: 8px; transition: 0.2s;" onmouseover="this.style.background='#157347'" onmouseout="this.style.background='#198754'">
+        <span>Ir a la firma</span>
+        <i class="fas fa-arrow-down"></i>
+    </a>
+    <div class="card section-card"><div class="card-body">
+        <h5 class="section-title"><i class="fas fa-building"></i> Business Information</h5>
+        <div class="row g-3">
+            <div class="col-md-6"><label class="form-label required-label">Business Name</label><input type="text" class="form-control" name="nombre_negocio" required></div>
+            <div class="col-md-6"><label class="form-label required-label">Phone</label><input type="text" class="form-control" name="telefono_negocio" oninput="formatPhoneInput(this)" required></div>
+            <div class="col-md-4"><label class="form-label">City</label><input type="text" class="form-control" name="ciudad" placeholder="e.g. McAllen"></div>
+            <div class="col-md-4"><label class="form-label">State</label><input type="text" class="form-control" name="estado_negocio" placeholder="e.g. TX" maxlength="2" style="text-transform: uppercase;"></div>
+            <div class="col-md-4"><label class="form-label">ZIP Code</label><input type="text" class="form-control" name="codigo_postal" placeholder="e.g. 78501"></div>
+        </div>
+    </div></div>
     <div class="card section-card"><div class="card-body">
         <h5 class="section-title"><i class="fas fa-dollar-sign"></i> 1. Pricing Structure</h5>
         <table class="table table-sm table-bordered align-middle" id="pricingTable" style="overflow: visible;">
@@ -152,15 +175,24 @@
             <li>Modelo CJL: $500/mes gestión + $30-$40 solo por cita PAGADA y completada.</li>
             <li>Política de cancelación de citas.</li>
         </ol>
-        <label class="form-label fw-bold"><input type="checkbox" name="acepta_terminos" required> Acepto los términos y condiciones del servicio</label>
+        <label class="form-label fw-bold"><input type="checkbox" name="acepta_terminos" id="termsCheckbox" required> Acepto los términos y condiciones del servicio</label>
     </div></div>
 
-    <div class="card section-card border-success mt-4"><div class="card-body">
+    <div class="card section-card border-success mt-4" id="authSection"><div class="card-body">
         <h5 class="section-title text-success"><i class="fas fa-check-circle"></i> Client Authorization</h5>
         <div class="row g-3">
-            <div class="col-md-6"><label class="form-label required-label">Full Name</label><input type="text" class="form-control" name="autoriza_cliente_nombre" id="authName" required></div>
+            <div class="col-md-6"><label class="form-label required-label">Full Name <small style="color:#999;" id="authNameHint">(marque los términos primero)</small></label><input type="text" class="form-control" name="autoriza_cliente_nombre" id="authName" required disabled></div>
         </div>
-        <div class="mt-3"><button type="submit" class="btn btn-success btn-lg" onclick="return generateSeal()"><i class="fas fa-check"></i> Accept & Authorize</button></div>
+        <div class="mt-3" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+            <div style="font-size: 13px; color: #666; background: #f8f9fa; padding: 8px 15px; border-radius: 6px; border-left: 3px solid #198754;">
+                <i class="fas fa-clock"></i> 
+                 
+                <i class="fas fa-history"></i> <strong>Última actualización: 17 de Octubre de 2026 - 08:24 PM {{ fecha_version }}</strong>
+            </div>
+            <button type="submit" class="btn btn-success btn-lg" id="submitBtn" onclick="return generateSeal()" disabled>
+                <i class="fas fa-check"></i> Accept & Authorize
+            </button>
+        </div>
         <input type="hidden" name="autoriza_cliente_sello" id="sealField">
     </div></div>
 <datalist id="partList">
@@ -177,6 +209,20 @@
 {% block scripts %}
 
 <script>
+    function formatPhoneInput(input) {
+        let numbers = input.value.replace(/\D/g, '');
+        if (numbers.length > 10) numbers = numbers.substring(0, 10);
+        let formatted = '';
+        if (numbers.length > 6) {
+            formatted = '(' + numbers.substring(0, 3) + ') ' + numbers.substring(3, 6) + '-' + numbers.substring(6);
+        } else if (numbers.length > 3) {
+            formatted = '(' + numbers.substring(0, 3) + ') ' + numbers.substring(3);
+        } else if (numbers.length > 0) {
+            formatted = '(' + numbers;
+        }
+        input.value = formatted;
+    }
+
 document.addEventListener('input', function (e) {
     if (e.target && (e.target.name === 'telefono_cotizaciones' || e.target.name === 'numero_principal_grupo')) {
         let input = e.target;
@@ -192,6 +238,44 @@ document.addEventListener('input', function (e) {
             formatted = '(' + numbers;
         }
         input.value = formatted;
+    }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+
+    const termsCheckbox = document.getElementById('termsCheckbox');
+    const authName = document.getElementById('authName');
+    const hint = document.getElementById('authNameHint');
+
+    const submitBtn = document.getElementById('submitBtn');
+
+    function updateSubmitBtn() {
+        if (termsCheckbox && authName && submitBtn) {
+            const ready = termsCheckbox.checked && authName.value.trim().length > 0;
+            submitBtn.disabled = !ready;
+            submitBtn.style.opacity = ready ? '1' : '0.5';
+            submitBtn.style.cursor = ready ? 'pointer' : 'not-allowed';
+        }
+    }
+
+    if (termsCheckbox && authName) {
+        termsCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                authName.disabled = false;
+                authName.focus();
+                if (hint) hint.style.display = 'none';
+            } else {
+                authName.disabled = true;
+                authName.value = '';
+                if (hint) hint.style.display = 'inline';
+            }
+            updateSubmitBtn();
+        });
+
+        authName.addEventListener('input', updateSubmitBtn);
+        updateSubmitBtn();
     }
 });
 </script>
