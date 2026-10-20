@@ -197,3 +197,36 @@ async def admin_update_status(id_interno: str, request: Request, key: str = "", 
         registro.estado = nuevo_estado; registro.status_changed_by = cambiado_por; registro.status_changed_at = datetime.now(); db.commit()
     return RedirectResponse(url=f"/onboarding/admin/view/{id_interno}?key={ADMIN_KEY}", status_code=303)
 # Force deploy 10/18/2026 15:17:36
+
+@router.post("/admin/edit/{id_interno}")
+async def admin_edit(
+    request: Request, id_interno: str, db: Session = Depends(get_db),
+    nombre_negocio: Optional[str] = Form(None), telefono_negocio: Optional[str] = Form(None),
+    email_cotizaciones: Optional[str] = Form(None), direccion_taller: Optional[str] = Form(None),
+    ciudad: Optional[str] = Form(None), estado_negocio: Optional[str] = Form(None), codigo_postal: Optional[str] = Form(None),
+    promocion_actual: Optional[str] = Form(None), descuento_efectivo: Optional[str] = Form(None),
+    notas_material: Optional[str] = Form(None)
+):
+    key = request.query_params.get("key")
+    if key != ADMIN_KEY: return HTMLResponse(content="Access Denied", status_code=403)
+
+    registro = db.query(OnboardingOptiGlass).filter(OnboardingOptiGlass.id_interno == id_interno).first()
+    if not registro:
+        return HTMLResponse(content="Registro no encontrado", status_code=404)
+
+    # Actualizar solo si vienen datos
+    if nombre_negocio is not None: registro.nombre_negocio = nombre_negocio
+    if telefono_negocio is not None: registro.telefono_negocio = telefono_negocio
+    if email_cotizaciones is not None: registro.email_cotizaciones = email_cotizaciones
+    if direccion_taller is not None: registro.direccion_taller = direccion_taller
+    if ciudad is not None: registro.ciudad = ciudad
+    if estado_negocio is not None: registro.estado_negocio = estado_negocio
+    if codigo_postal is not None: registro.codigo_postal = codigo_postal
+    if promocion_actual is not None: registro.promocion_actual = promocion_actual
+    if descuento_efectivo is not None: registro.descuento_efectivo = descuento_efectivo
+    if notas_material is not None: registro.notas_material = notas_material
+
+    db.commit()
+    
+    # Redirigir de vuelta al historial (catálogo)
+    return RedirectResponse(url=f"/onboarding/admin/history?key={ADMIN_KEY}", status_code=303)

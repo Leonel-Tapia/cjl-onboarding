@@ -1,33 +1,59 @@
 ﻿{% extends "base.html" %}
 {% block title %}Admin - Onboarding History{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-2">
-        <div>
-            <h2 class="mb-0"><i class="fas fa-history text-primary"></i> Onboarding History</h2>
-            <div class="text-muted small mt-1"><i class="fas fa-clock"></i> Última actualización: 19 de Octubre de 2026 - 11:16 PM</div>
-        </div>
-        <div>
-            <a href="/onboarding" class="btn btn-outline-primary"><i class="fas fa-external-link-alt"></i> Open Empty Form</a>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0"><i class="fas fa-history text-primary"></i> Onboarding History</h2>
+        <div class="text-muted small mt-1"><i class="fas fa-clock"></i> Última actualización: 21 de Octubre de 2026 - 9:50 AM</div>
+    </div>
+    <div>
+        <a href="/onboarding" class="btn btn-outline-primary me-2"><i class="fas fa-external-link-alt"></i> Open Empty Form</a>
+        <a href="#" onclick="window.location.replace('https://www.google.com');" class="btn btn-outline-danger"><i class="fas fa-sign-out-alt"></i> Exit System (Logout)</a>
+    </div>
+</div>
+
+<!-- Barra de Búsqueda y Botón de Excel -->
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="input-group">
+            <span class="input-group-text bg-white"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by Business Name or Email...">
         </div>
     </div>
-    <table class="table table-hover table-bordered align-middle table-sm">
-        <thead class="table-dark">
-            <tr><th class="py-1">Reference ID</th><th class="py-1">Date Submitted</th><th class="py-1">Email</th><th class="py-1">Status</th><th class="py-1">Actions</th></tr>
+    <div class="col-md-6 text-end">
+        <button class="btn btn-success" onclick="exportTableToCSV('onboarding_records.csv')">
+            <i class="fas fa-file-excel"></i> Export to Excel (CSV)
+        </button>
+    </div>
+</div>
+
+<!-- Tabla con Scroll y Encabezado Fijo -->
+<div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+    <table class="table table-hover table-bordered align-middle table-sm" style="font-size: 0.85rem; margin-bottom: 0;" id="adminTable" style="font-size: 0.85rem;">
+        <thead class="table-dark" style="position: sticky; top: 0; z-index: 1020;">
+            <tr>
+                <th style="padding: 2px 8px;" style="width: 30%;">Business Name</th>
+                <th style="padding: 2px 8px;" style="width: 20%;">Date Submitted</th>
+                <th style="padding: 2px 8px;" style="width: 25%;">Email</th>
+                <th style="padding: 2px 8px;" style="width: 10%;">Status</th>
+                <th class="py-1 text-center" style="width: 15%;">Actions</th>
+            </tr>
         </thead>
         <tbody>
             {% for r in registros %}
             <tr>
-                <td class="py-1"><strong>{{ r.id_interno }}</strong></td>
-                <td class="py-1">{{ r.fecha_submit.strftime('%Y-%m-%d %H:%M') }} UTC</td>
-                <td class="py-1">{{ r.email_cotizaciones }}</td>
-                <td class="py-1">
-                    {% if r.estado == 'pending' %}<span class="badge bg-warning text-dark">Pending</span>
+                <td style="padding: 2px 8px;"><strong>{{ r.nombre_negocio or 'N/A' }}</strong>
+                </td>
+                <td style="padding: 2px 8px;">{{ r.fecha_submit.strftime('%Y-%m-%d %H:%M') }} UTC</td>
+                <td style="padding: 2px 8px;">{{ r.email_cotizaciones }}</td>
+                <td style="padding: 2px 8px;">{% if r.estado == 'pending' %}<span class="badge bg-warning text-dark">Pending</span>
                     {% elif r.estado == 'in_progress' %}<span class="badge bg-info text-dark">In Progress</span>
                     {% else %}<span class="badge bg-success">Completed</span>{% endif %}
                 </td>
-                <td class="py-1">
-                    <a href="/onboarding/admin/view/{{ r.id_interno }}?key=CJL_Admin_2026" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="fas fa-eye"></i> View</a>
-                    <a href="/onboarding/pdf/{{ r.id_interno }}" class="btn btn-sm btn-outline-danger py-0 px-2" target="_blank"><i class="fas fa-file-pdf"></i> PDF</a>
+                <td class="text-center" style="padding: 2px 8px;"><div class="d-flex justify-content-center gap-1 flex-nowrap">
+                        <a href="/onboarding/admin/view/{{ r.id_interno }}?key=CJL_Admin_2026" class="btn btn-sm btn-outline-primary p-1" title="Edit"><i class="fas fa-edit"></i></a>
+                        <a href="/onboarding/pdf/{{ r.id_interno }}" class="btn btn-sm btn-outline-danger p-1" target="_blank" title="PDF"><i class="fas fa-file-pdf"></i></a>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
@@ -35,5 +61,42 @@
     </table>
 </div>
 
-<div class="mt-2"><a href="/" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Home</a></div>
+<script>
+    // 1. Funcionalidad del Buscador
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        let filter = this.value.toLowerCase();
+        let rows = document.querySelectorAll('#adminTable tbody tr');
+        
+        rows.forEach(row => {
+            let text = row.innerText.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+
+    // 2. Funcionalidad de Exportar a CSV
+    function exportTableToCSV(filename) {
+        let csv = [];
+        let rows = document.querySelectorAll("#adminTable tr");
+        
+        for (let i = 0; i < rows.length; i++) {
+            let row = [], cols = rows[i].querySelectorAll("td, th");
+            
+            for (let j = 0; j < cols.length - 1; j++) { // Excluir la columna de Actions
+                let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").replace(/(\s\s)/gm, " ");
+                data = data.replace(/"/g, '""');
+                row.push('"' + data + '"');
+            }
+            csv.push(row.join(","));
+        }
+
+        let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
+        let downloadLink = document.createElement("a");
+        downloadLink.download = filename;
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+</script>
 {% endblock %}
