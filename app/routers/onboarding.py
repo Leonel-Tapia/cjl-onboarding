@@ -1,4 +1,43 @@
 ﻿from fastapi import APIRouter, Request, Depends, Form
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+def enviar_correo_notificacion(registro):
+    smtp_email = os.getenv("SMTP_EMAIL")
+    smtp_password = os.getenv("SMTP_PASSWORD")
+    if not smtp_email or not smtp_password:
+        print("Faltan credenciales SMTP")
+        return
+
+    msg = MIMEMultipart()
+    msg['From'] = smtp_email
+    msg['To'] = smtp_email
+    msg['Subject'] = f"Nuevo Onboarding: {registro.id_interno}"
+
+    body = f"""
+    <h3>Nuevo formulario recibido</h3>
+    <p><strong>ID:</strong> {registro.id_interno}</p>
+    <p><strong>Email:</strong> {registro.email_cotizaciones}</p>
+    <p><strong>Fecha:</strong> {registro.fecha_submit}</p>
+    """
+    msg.attach(MIMEText(body, 'html'))
+
+    try:
+        import ssl
+        context = ssl.create_default_context()
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context)
+        server.login(smtp_email, smtp_password)
+        server.sendmail(smtp_email, smtp_email, msg.as_string())
+        server.quit()
+        print("✅ Correo enviado con éxito.")
+    except Exception as e:
+        print(f"❌ Error al enviar correo: {e}")
+
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -118,6 +157,7 @@ async def submit_form(
         autoriza_cliente=True, autoriza_cliente_nombre=autoriza_cliente_nombre, autoriza_cliente_sello=autoriza_cliente_sello, autoriza_cliente_fecha=func.now(), autoriza_cliente_ip=client_ip,
     )
     db.add(registro); db.commit(); db.refresh(registro)
+    enviar_correo_notificacion(registro)
     return RedirectResponse(url=f"/onboarding/success/{registro.id_interno}", status_code=303)
 
 @router.get("/pdf/{id_interno}")
